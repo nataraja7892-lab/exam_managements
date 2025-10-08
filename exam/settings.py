@@ -147,6 +147,8 @@ LOGIN_EXEMPT_URLS = [
     reverse_lazy('register'),
     '/admin/',  # optional if you want to allow access
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 
 # Middleware-based login requirement
 

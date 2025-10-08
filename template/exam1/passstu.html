@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Passed Students - List</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 70%;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h2>✅ Passed Students - {{ course|upper }} | {{ exam.exam_title }}</h2>
+    {% if students %}
+        <table>
+            <tr>
+                <th>Student Name</th>
+                <th>Total Marks</th>
+                <th>Max Marks</th>
+                <th>Percentage</th>
+            </tr>
+            {% for s in students %}
+            <tr>
+                <td>{{ s.student.name }}</td>
+                <td>{{ s.total }}</td>
+                <td>{{ s.max_total }}</td>
+                <td>{{ s.percentage }}%</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No passed students found for this exam.</p>
+    {% endif %}
+</body>
+</html>

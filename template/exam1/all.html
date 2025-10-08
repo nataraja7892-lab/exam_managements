@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Total Students</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 30px;
+        }
+        .container {
+            width: 80%;
+            max-width: 900px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            display: inline-block;
+            text-align: left;
+        }
+        ul li {
+            margin: 8px 0;
+            padding: 10px;
+            background: #fdfdfd;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        ul li a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        ul li a:hover {
+            text-decoration: underline;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        table th, table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        table th {
+            background: #007bff;
+            color: #fff;
+        }
+        table tr:hover {
+            background: #f1f7ff;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 14px;
+            margin: 10px 5px 0 0;
+            font-size: 14px;
+            color: #fff;
+            background: #007bff;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .back-links {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📊 Total Students</h2>
+
+        <!-- 🔹 Show total students only on courses page -->
+        {% if total_students %}
+            <div class="total">👉 Total Students: {{ total_students }}</div>
+        {% endif %}
+
+        {% if courses %}
+            <h3>Available Courses</h3>
+            <ul>
+                {% for course, count in courses.items %}
+                    <li>
+                        <a href="?course={{ course }}">{{ course }}</a> 
+                        <span style="color: #666;">({{ count }} Students)</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if years %}
+            <h3>{{ course }} - Years</h3>
+            <ul>
+                {% for year, count in years.items %}
+                    <li>
+                        <a href="?course={{ course }}&year={{ year }}">Year {{ year }}</a> 
+                        <span style="color: #666;">({{ count }} Students)</span>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="back-links">
+                <a href="?" class="btn">⬅ Back to Courses</a>
+            </div>
+        {% endif %}
+
+        {% if students %}
+            <h3>{{ course }} - Year {{ year }} Students</h3>
+            <table>
+                <tr>
+                    <th>Register No</th>
+                    <th>Name</th>
+                    <th>Course</th>
+                    <th>Year</th>
+                </tr>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.register_number }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.course }}</td>
+                    <td>{{ student.get_year_display }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div class="back-links">
+                <a href="?course={{ course }}" class="btn">⬅ Back to {{ course }} Years</a>
+                <a href="?" class="btn">⬅ Back to Courses</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

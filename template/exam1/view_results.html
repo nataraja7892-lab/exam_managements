@@ -1,0 +1,104 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>View Results</title>
+</head>
+
+<body>
+    <h2>View Student Results</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <label for="exam">Exam Title:</label>
+        <select name="exam" required>
+            <option value="">-- Select Exam --</option>
+            {% for exam in exams %}
+                <option value="{{ exam.exam_id }}" {% if selected_exam_id == exam.exam_id %}selected{% endif %}>
+                    {{ exam.exam_title }}
+                </option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="course">Course:</label>
+        <select name="course" required>
+            <option value="">-- Select Course --</option>
+            {% for c in courses %}
+                <option value="{{ c }}" {% if selected_course == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="year">Year:</label>
+        <select name="year" required>
+            <option value="">-- Select Year --</option>
+            <option value="1" {% if selected_year == "1" %}selected{% endif %}>First Year</option>
+            <option value="2" {% if selected_year == "2" %}selected{% endif %}>Second Year</option>
+            <option value="3" {% if selected_year == "3" %}selected{% endif %}>Third Year</option>
+            <option value="4" {% if selected_year == "4" %}selected{% endif %}>Fourth Year</option>
+        </select><br><br>
+
+        <button type="submit" name="fetch_results">View Results</button>
+    </form>
+
+    {% if results_data %}
+        <h3>Results</h3>
+
+        <!-- 🔹 Send All Results Button -->
+        <a href="{% url 'exam1:send_all_results_email' selected_exam.exam_id %}" class="btn btn-primary" style="margin-bottom: 20px;">
+            📧 Send All Results
+        </a>
+
+        <table border="1">
+            <tr>
+                <th>Register No</th>
+                <th>Name</th>
+                {% for subject in selected_exam.subject_names %}
+                    <th>{{ subject.name }}</th>
+                {% endfor %}
+                <th>Total</th>
+                <th>Percentage</th>
+                <th>Total Max Marks</th>
+                <th>Actions</th>
+            </tr>
+
+            <!-- Subject-wise max marks row -->
+            <tr style="font-weight: bold; background-color: #f0f0f0;">
+                <td colspan="2">Max Marks</td>
+                {% for subject in selected_exam.subject_names %}
+                    <td>{{ subject_max_marks|get_item:subject.name }}</td>
+                {% endfor %}
+                <td>{{ total_max_marks }}</td>
+                <td>100%</td>
+                <td></td>
+                <td></td>
+            </tr>
+
+            {% for data in results_data %}
+                <tr>
+                    <td>{{ data.student.register_number }}</td>
+                    <td>{{ data.student.name }}</td>
+                    {% for subject in selected_exam.subject_names %}
+                        <td>{{ data.marks|get_item:subject.name|default:"-" }}</td>
+                    {% endfor %}
+                    <td>{{ data.total }}</td>
+                    <td>{{ data.percentage }}</td>
+                    <td id="max-marks-{{ data.student.id }}">{{ total_max_marks }}</td>
+                    <td>
+                        <!-- Download PDF -->
+                        <a href="{% url 'exam1:download_student_result' data.student.id selected_exam.exam_id %}" target="_blank">
+                            Download PDF
+                        </a>
+                        |
+                        <!-- Send Result Email -->
+                        <a href="{% url 'exam1:send_result' data.student.id selected_exam.exam_id %}" class="btn btn-success">
+                            📧 Send Result
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</body> 
+</html>

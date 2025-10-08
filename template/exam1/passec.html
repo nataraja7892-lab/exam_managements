@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Passed Students - Exams</title>
+</head>
+<body>
+    <h2>✅ Passed Students in {{ course|upper }} - Select Exam</h2>
+    {% if exams %}
+        <ul>
+            {% for exam in exams %}
+                <li>
+                    <a href="{% url 'exam1:passed_students_list' course exam.exam_id %}">
+                        {{ exam.exam_title }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No exams with passed students for {{ course }}.</p>
+    {% endif %}
+</body>
+</html>

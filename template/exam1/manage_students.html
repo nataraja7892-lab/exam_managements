@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Students</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f4f4f4; }
+        .btn { padding: 6px 12px; text-decoration: none; margin: 3px; display: inline-block; }
+        .btn-update { background: #4CAF50; color: white; }
+        .btn-delete { background: #f44336; color: white; }
+        .btn-back { background: #555; color: white; }
+        .btn-add { background: #2196F3; color: white; }
+    </style>
+</head>
+<body>
+
+<h1>📚 Student Management</h1>
+
+{% if courses %}
+    <h2>Select Course</h2>
+    <ul>
+        {% for c in courses %}
+            <li><a href="?course={{ c }}">{{ c }}</a></li>
+            
+        {% endfor %}
+    </ul>
+
+{% elif years %}
+    <h2>Select Year for {{ course }}</h2>
+    <ul>
+        {% for y in years %}
+            <li><a href="?course={{ course }}&year={{ y }}">{{ y }}</a></li>
+        {% endfor %}
+    </ul>
+    <a class="btn btn-back" href="?">⬅ Back</a>
+
+{% elif students %}
+    <h2>Students in {{ course }} - Year {{ year }}</h2>
+    <table>
+        <tr>
+            <th>Register No</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Caste</th>
+            <th>DOB</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+        {% for s in students %}
+        <tr>
+            <td>{{ s.register_number }}</td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.get_gender_display }}</td>
+            <td>{{ s.caste }}</td>
+            <td>{{ s.dob }}</td>
+            <td>{{ s.mobile_number }}</td>
+            <td>{{ s.email }}</td>
+            <td>
+                <a class="btn btn-update" href="?course={{ course }}&year={{ year }}&student_id={{ s.id }}&action=update">✏ Update</a>
+                <a class="btn btn-delete" href="?course={{ course }}&year={{ year }}&student_id={{ s.id }}&action=delete" onclick="return confirm('Delete this student?')">🗑 Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a class="btn btn-add" href="?course={{ course }}&year={{ year }}&student_id=new&action=update">➕ Add Student</a>
+    <br><br>
+    <a class="btn btn-back" href="?course={{ course }}">⬅ Back</a>
+
+{% elif student %}
+    <h2>{% if student.id %}✏ Update Student{% else %}➕ Add New Student{% endif %}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label>Register Number:</label><br>
+        <input type="text" name="register_number" value="{{ student.register_number }}"><br>
+
+        <label>Name:</label><br>
+        <input type="text" name="name" value="{{ student.name }}"><br>
+
+        <label>Course:</label><br>
+        <input type="text" name="course" value="{{ student.course }}"><br>
+
+        <label>Gender:</label><br>
+        <select name="gender">
+            <option value="M" {% if student.gender == "M" %}selected{% endif %}>Male</option>
+            <option value="F" {% if student.gender == "F" %}selected{% endif %}>Female</option>
+            <option value="O" {% if student.gender == "O" %}selected{% endif %}>Other</option>
+        </select><br>
+
+        <label>Caste:</label><br>
+        <input type="text" name="caste" value="{{ student.caste }}"><br>
+
+        <label>Date of Birth:</label><br>
+        <input type="date" name="dob" value="{{ student.dob|date:'Y-m-d' }}"><br>
+
+        <label>Mobile Number:</label><br>
+        <input type="text" name="mobile_number" value="{{ student.mobile_number }}"><br>
+
+        <label>Email:</label><br>
+        <input type="email" name="email" value="{{ student.email }}"><br>
+
+        <label>Year:</label><br>
+        <select name="year">
+            <option value="1" {% if student.year == 1 %}selected{% endif %}>First Year</option>
+            <option value="2" {% if student.year == 2 %}selected{% endif %}>Second Year</option>
+            <option value="3" {% if student.year == 3 %}selected{% endif %}>Third Year</option>
+            <option value="4" {% if student.year == 4 %}selected{% endif %}>Fourth Year</option>
+        </select><br><br>
+
+        <button type="submit" class="btn btn-update">💾 Save</button>
+    </form>
+    <br>
+    <a class="btn btn-back" href="?course={{ course }}&year={{ year }}">⬅ Back</a>
+{% endif %}
+
+</body>
+</html>

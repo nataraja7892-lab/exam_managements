@@ -1,0 +1,223 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enter Results</title>
+    <style>
+        .subject-marks-container {
+            position: relative;
+            display: inline-block;
+        }
+        .max-marks-display {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 0.8em;
+        }
+        .max-marks-info {
+            background: #f0f8ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .max-marks-info ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .max-marks-info li {
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        .required-msg {
+            color: red;
+            font-weight: bold;
+        }
+        .ok-msg {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        function calculateTotalAndPercentage(studentId) {
+            let totalMarks = 0;
+            let totalMax = 0;
+            const row = document.querySelector(`#student-${studentId}`);
+            const subjectInputs = row.querySelectorAll(".subject-marks");
+
+            subjectInputs.forEach(input => {
+                let marks = parseFloat(input.value) || 0;
+                const max = parseFloat(input.getAttribute("data-max")) || 0;
+
+                // ✅ Ensure marks do not exceed maximum or fall below 0
+                if (marks > max) {
+                    input.value = max;
+                    marks = max;
+                }
+                if (marks < 0) {
+                    input.value = 0;
+                    marks = 0;
+                }
+
+                totalMarks += marks;
+                totalMax += max;
+            });
+
+            document.getElementById(`total-marks-${studentId}`).innerText = totalMarks;
+            document.getElementById(`max-marks-${studentId}`).innerText = totalMax;
+
+            const percentage = totalMax > 0 ? (totalMarks / totalMax) * 100 : 0;
+            document.getElementById(`percentage-${studentId}`).innerText = percentage.toFixed(2);
+        }
+
+        // ✅ Validation: show "Required" instead of saving if any subject missing
+        function validateMarksForm(event) {
+            let allFilled = true;
+            const rows = document.querySelectorAll("tr[id^='student-']");
+
+            rows.forEach(row => {
+                const studentId = row.id.split("-")[1];
+                const inputs = row.querySelectorAll(".subject-marks");
+                let rowComplete = true;
+
+                inputs.forEach(input => {
+                    if (input.value === "" || input.value === null) {
+                        rowComplete = false;
+                    }
+
+                    // ✅ Final safety check before submit
+                    const max = parseFloat(input.getAttribute("data-max")) || 0;
+                    let val = parseFloat(input.value) || 0;
+                    if (val > max) {
+                        input.value = max;
+                    }
+                    if (val < 0) {
+                        input.value = 0;
+                    }
+                });
+
+                const statusCell = row.querySelector(".status-cell");
+                if (!rowComplete) {
+                    statusCell.innerHTML = "❌ <span class='required-msg'>Marks Required</span>";
+                    allFilled = false;
+                } else {
+                    if (!statusCell.innerHTML.includes("Already Entered")) {
+                        statusCell.innerHTML = "✅ <span class='ok-msg'>Ready</span>";
+                    }
+                }
+            });
+
+            if (!allFilled) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body>
+    <h2>Enter Results</h2>
+
+    <!-- Select Exam, Course, Year -->
+    <form method="POST">
+        {% csrf_token %}
+        <label for="exam">Exam Title:</label>
+        <select name="exam" required>
+            <option value="">-- Select Exam --</option>
+            {% for exam in exams %}
+                <option value="{{ exam.exam_id }}" {% if selected_exam_id == exam.exam_id %}selected{% endif %}>
+                    {{ exam.exam_title }}
+                </option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="course">Course:</label>
+        <select name="course" required>
+            <option value="">-- Select Course --</option>
+            {% for c in courses %}
+                <option value="{{ c }}" {% if selected_course == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="year">Year:</label>
+        <select name="year" required>
+            <option value="">-- Select Year --</option>
+            <option value="1" {% if selected_year == "1" %}selected{% endif %}>First Year</option>
+            <option value="2" {% if selected_year == "2" %}selected{% endif %}>Second Year</option>
+            <option value="3" {% if selected_year == "3" %}selected{% endif %}>Third Year</option>
+            <option value="4" {% if selected_year == "4" %}selected{% endif %}>Fourth Year</option>
+        </select><br><br>
+
+        <button type="submit">Fetch Students</button>
+    </form>
+
+    {% if students and selected_exam %}
+        <form method="POST" onsubmit="return validateMarksForm(event)">
+            {% csrf_token %}
+            <input type="hidden" name="exam" value="{{ selected_exam.exam_id }}" required>
+            <input type="hidden" name="course" value="{{ selected_course }}">
+            <input type="hidden" name="year" value="{{ selected_year }}">
+
+            <div class="max-marks-info">
+                <strong>📝 Maximum Marks Set by Exam Creator:</strong>
+                <ul>
+                    {% for subject in subject_list %}
+                        <li>{{ subject.name }}: <strong>{{ subject.max_marks }}</strong> marks</li>
+                    {% endfor %}
+                </ul>
+                <p>📌 <strong>Total Maximum Marks:</strong> {{ selected_exam.total_max_marks }}</p>
+            </div>
+            
+            <table border="1">
+                <tr>
+                    <th>Register No</th>
+                    <th>Name</th>
+                    {% for subject in subject_list %}
+                        <th>{{ subject.name }}<br><small>(Max: {{ subject.max_marks }})</small></th>
+                    {% endfor %}
+                    <th>Total Marks</th>
+                    <th>Max Marks</th>
+                    <th>Percentage</th>
+                    <th>Status</th>
+                </tr>
+
+                {% for student in students %}
+                <tr id="student-{{ student.id }}">
+                    <td>{{ student.register_number }}</td>
+                    <td>{{ student.name }}</td>
+                    {% for subject in subject_list %}
+                        <td>
+                            <div class="subject-marks-container">
+                                <input type="number"
+                                       class="subject-marks"
+                                       name="marks_{{ student.id }}_{{ subject.name }}"
+                                       min="0"
+                                       max="{{ subject.max_marks }}"
+                                       data-max="{{ subject.max_marks }}"
+                                       value="{{ results_map|get_item:student.id|get_item:subject.name|default:'' }}"
+                                       oninput="calculateTotalAndPercentage({{ student.id }})">
+                                <span class="max-marks-display">/{{ subject.max_marks }}</span>
+                            </div>
+                        </td>
+                    {% endfor %}
+                    <td id="total-marks-{{ student.id }}">0</td>
+                    <td id="max-marks-{{ student.id }}">{{ selected_exam.total_max_marks }}</td>
+                    <td id="percentage-{{ student.id }}">0.00</td>
+                    <td class="status-cell">
+                        {% if results_map|get_item:student.id %}
+                            ✅ Already Entered |
+                            <a href="{% url 'exam1:delete_result' student.id selected_exam.exam_id %}" onclick="return confirm('Delete this result?');">❌ Delete</a>
+                        {% else %}
+                            New Entry
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <br><button type="submit" name="save_results">Save Results</button>
+        </form>
+    {% endif %}
+</body>
+</html>

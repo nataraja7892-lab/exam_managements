@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load custom_filters %}
+    <title>Passed Students</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            padding: 30px;
+        }
+        .container {
+            width: 85%;
+            max-width: 950px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h2, h3 { color: #2c3e50; margin-bottom: 15px; }
+        ul { list-style: none; padding: 0; display: inline-block; text-align: left; }
+        ul li { margin: 8px 0; padding: 10px; background: #fdfdfd; border-radius: 6px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
+        ul li a { text-decoration: none; color: #007bff; font-weight: bold;}
+        ul li a:hover { text-decoration: underline; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table th, table td { padding: 10px; text-align: center; border-bottom: 1px solid #eee; }
+        table th { background: #007bff; color: #fff; }
+        table tr:hover { background: #f1f7ff; }
+        .btn { display: inline-block; padding: 7px 12px; margin: 8px 3px; font-size: 13px;
+               color: #fff; background: #007bff; border-radius: 5px; text-decoration: none;}
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>✅ Passed Students</h2>
+
+    {% if courses %}
+        <h3>Available Courses</h3>
+        <ul>
+            {% for course, count in courses.items %}
+                <li><a href="?course={{ course }}">{{ course }}</a> 
+                <span style="color:#555">({{ count }} Students)</span></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if years %}
+        <h3>{{ course }} - Years</h3>
+        <ul>
+            {% for year, count in years.items %}
+                <li><a href="?course={{ course }}&year={{ year }}">Year {{ year }}</a> 
+                <span style="color:#555">({{ count }} Students)</span></li>
+            {% endfor %}
+        </ul>
+        <a href="?" class="btn">⬅ Back to Courses</a>
+    {% endif %}
+
+    {% if exams %}
+        <h3>{{ course }} - Year {{ year }} Exams</h3>
+        <ul>
+            {% for exam in exams %}
+                <li><a href="?course={{ course }}&year={{ year }}&exam_id={{ exam.exam_id }}">{{ exam.exam_title }}</a></li>
+            {% endfor %}
+        </ul>
+        <a href="?course={{ course }}" class="btn">⬅ Back to Years</a>
+        <a href="?" class="btn">⬅ Back to Courses</a>
+    {% endif %}
+
+    {% if passed_students %}
+        <h3>{{ course }} - Year {{ year }} - {{ exam.exam_title }}</h3>
+        <table>
+            <tr>
+                <th>Register No</th>
+                <th>Name</th>
+                {% for subject in exam.subject_max_marks %}
+                    <th>{{ subject.name }}</th>
+                {% endfor %}
+                <th>Total</th>
+                <th>Percentage</th>
+                <th>Total Max Marks</th>
+            </tr>
+            {% for ps in passed_students %}
+            <tr>
+                <td>{{ ps.student.register_number }}</td>
+                <td>{{ ps.student.name }}</td>
+                {% for subject in exam.subject_max_marks %}
+                    <td>{{ ps.marks|get_item:subject.name|default:"-" }}</td>
+                {% endfor %}
+                <td>{{ ps.total }}</td>
+                <td>{{ ps.percentage }}%</td>
+                <td>{{ ps.total_max }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <a href="?course={{ course }}&year={{ year }}" class="btn">⬅ Back to Exams</a>
+        <a href="?course={{ course }}" class="btn">⬅ Back to Years</a>
+        <a href="?" class="btn">⬅ Back to Courses</a>
+    {% endif %}
+</div>
+</body>
+</html>

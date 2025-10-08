@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examination Dashboard | Professional System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+    <style>
+        .sidebar:hover {
+            box-shadow: 0 0 15px rgba(30, 64, 175, 0.3);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+        .notification-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 12px;
+            height: 12px;
+            background-color: #ef4444;
+            border-radius: 50%;
+        }
+        .dark-mode {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .dark-mode .dark-card {
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+        .theme-transition {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans theme-transition" x-data="{ sidebarOpen: false, notificationsOpen: false, darkMode: false, profileOpen: false, searchOpen: false }" :class="{ 'dark-mode': darkMode }">
+    <!-- Top Navigation -->
+    <nav class="gradient-bg text-white p-4 flex justify-between items-center shadow-md">
+        <div class="flex items-center">
+            <button @click="sidebarOpen = !sidebarOpen" class="mr-4 md:hidden">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+            <h1 class="text-xl font-bold flex items-center">
+                <i class="fas fa-graduation-cap mr-2"></i> Examination Dashboard
+            </h1>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            <!-- Search Button -->
+            <div class="relative hidden md:block">
+                <button @click="searchOpen = !searchOpen" class="p-2 rounded-full hover:bg-blue-800 transition-colors">
+                    <i class="fas fa-search text-xl"></i>
+                </button>
+                <div x-show="searchOpen" @click.away="searchOpen = false" class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-10">
+                    <div class="p-3 border-b gradient-bg text-white flex items-center">
+                        <i class="fas fa-search mr-2"></i>
+                        <input type="text" placeholder="Search students, exams, courses..." class="bg-transparent border-none text-white placeholder-blue-200 outline-none w-full">
+                    </div>
+                    <div class="max-h-60 overflow-y-auto p-2">
+                        <p class="text-sm text-gray-500 p-2">Recent searches</p>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Mathematics Exam</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Student: John Smith</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Physics Course</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dark Mode Toggle -->
+            <button @click="darkMode = !darkMode" class="p-2 rounded-full hover:bg-blue-800 transition-colors">
+                <i class="fas fa-moon text-xl" x-show="!darkMode"></i>
+                <i class="fas fa-sun text-xl" x-show="darkMode"></i>
+            </button>
+            
+            <!-- Notifications -->
+            <div class="relative">
+                <button @click="notificationsOpen = !notificationsOpen" class="relative p-2 rounded-full hover:bg-blue-800 transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div x-show="notificationsOpen" @click.away="notificationsOpen = false" class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-10 dark-card">
+                    <div class="p-3 border-b gradient-bg text-white">
+                        <h3 class="font-bold">Notifications</h3>
+                    </div>
+                    <div class="max-h-60 overflow-y-auto">
+                        <a href="#" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 border-b dark:text-gray-300 dark:hover:bg-gray-700">
+                            <div class="flex justify-between">
+                                <span class="font-semibold">Missing Marks</span>
+                                <span class="text-xs text-gray-500">10 min ago</span>
+                            </div>
+                            <p class="mt-1">5 students have missing marks in Mathematics</p>
+                        </a>
+                        <a href="{% url 'exam1:create_exam' %}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 border-b dark:text-gray-300 dark:hover:bg-gray-700">
+                            <div class="flex justify-between">
+                                <span class="font-semibold">New Exam Created</span>
+                                <span class="text-xs text-gray-500">1 hour ago</span>
+                            </div>
+                            <p class="mt-1">Final Term Examination 2023 has been created</p>
+                        </a>
+                        <a href="{% url 'exam1:view_results' %}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                            <div class="flex justify-between">
+                                <span class="font-semibold">Results Published</span>
+                                <span class="text-xs text-gray-500">2 hours ago</span>
+                            </div>
+                            <p class="mt-1">Semester 1 results have been published</p>
+                        </a>
+                    </div>
+                    <div class="p-2 border-t text-center bg-gray-100 dark:bg-gray-800">
+                        <a href="#" class="text-sm text-blue-600 font-semibold dark:text-blue-400">View All Notifications</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Profile -->
+            <div class="relative">
+                <button @click="profileOpen = !profileOpen" class="flex items-center space-x-2 bg-blue-800 py-1 px-3 rounded-full">
+                    <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="User" class="w-8 h-8 rounded-full border-2 border-white">
+                    <span class="hidden md:inline">Prof. Johnson</span>
+                    <i class="fas fa-chevron-down text-sm hidden md:inline"></i>
+                </button>
+                <div x-show="profileOpen" @click.away="profileOpen = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-10 dark-card">
+                    <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                        <p class="text-sm font-medium text-gray-800 dark:text-white">Signed in as</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">prof.johnson@example.com</p>
+                    </div>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">Profile</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">Settings</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">Activity Log</a>
+                    <div class="border-t border-gray-100 dark:border-gray-700">
+                        <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700">Sign out</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <div :class="{'block': sidebarOpen, 'hidden': !sidebarOpen}" class="fixed inset-0 z-10 md:relative md:block md:z-auto w-64 h-screen gradient-bg text-white p-5 transform transition-transform duration-300 md:transform-none sidebar" 
+             :class="{ 'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen }"
+             @click.away="sidebarOpen = false">
+            <div class="flex justify-between items-center mb-8 md:mb-6">
+                <h1 class="text-2xl font-bold flex items-center">
+                    <i class="fas fa-book-open mr-2"></i> Exam System
+                </h1>
+                <button @click="sidebarOpen = false" class="md:hidden">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <ul class="space-y-2">
+                <li class="px-4 py-3 bg-blue-800 rounded-lg">
+                    <a href="#" class="flex items-center space-x-3">
+                        <i class="fas fa-home w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="px-4 py-3 hover:bg-blue-800 rounded-lg transition-colors">
+                    <a href="{% url 'exam1:exam_list' %}"  class="flex items-center space-x-3">
+                        <i class="fas fa-book w-5"></i>
+                        <span>Exams</span>
+                    </a>
+                </li>
+                <li class="px-4 py-3 hover:bg-blue-800 rounded-lg transition-colors">
+                    <a href="{% url 'exam1:enter_results' %}" class="flex items-center space-x-3">
+                        <i class="fas fa-pen w-5"></i>
+                        <span>Enter Marks </span>
+                    </a>
+                </li>
+                <li class="px-4 py-3 hover:bg-blue-800 rounded-lg transition-colors">
+                    <a href="{% url 'exam1:view_results' %}" class="flex items-center space-x-3">
+                        <i class="fas fa-chart-bar w-5"></i>
+                        <span>View Results</span>
+                    </a>
+                </li>
+         <li class="px-4 py-3 hover:bg-blue-800 rounded-lg transition-colors">
+    <a href="{% url 'exam1:ranking' %}" class="flex items-center space-x-3">
+        <i class="fas fa-award w-5"></i>
+        <span>Ranking</span>
+    </a>
+</li>
+                <li class="px-4 py-3 hover:bg-blue-800 rounded-lg transition-colors">
+                    <a href="{% url 'exam1:manage_students' %}" class="flex items-center space-x-3">
+                <i class="fas fa-user-graduate w-5"></i>
+                <span>Student Details</span>
+            </a>
+            </li>
+            </ul>
+            
+            <div class="mt-8 pt-6 border-t border-blue-700">
+                <h3 class="text-sm uppercase text-blue-300 mb-3 px-4">Quick Actions</h3>
+                <ul class="space-y-2">
+                    <li class="px-4 py-2 hover:bg-blue-800 rounded-lg transition-colors">
+                        <a href="{% url 'exam1:create_exam' %}" class="flex items-center space-x-3 text-sm">
+                            <i class="fas fa-plus-circle w-5"></i>
+                            <span>Create Exam</span>
+                        </a>
+                    </li>
+                    <li class="px-4 py-2 hover:bg-blue-800 rounded-lg transition-colors">
+                        <a href="#" class="flex items-center space-x-3 text-sm">
+                            <i class="fas fa-download w-5"></i>
+                            <span>Download PDF</span>
+                        </a>
+                    </li>
+                    <li class="px-4 py-2 hover:bg-blue-800 rounded-lg transition-colors">
+                        <a href="{% url 'exam1:passed' %}" class="flex items-center space-x-3 text-sm">
+                            <i class="fas fa-upload w-5"></i>
+                            <span>Export Data</span>
+                        </a>
+                    </li>
+                      <li class="px-4 py-3 hover:bg-blue-800 rounded-lg transition-colors">
+                    <a href="{% url 'exam1:register_student' %}" class="flex items-center space-x-3">
+                         <i class="fas fa-plus-circle w-5"></i>
+                        <span>registration</span>
+                    </a>
+                </li>
+                </ul>
+            </div>
+            
+            <!-- Quick Stats in Sidebar -->
+            <div class="mt-8 pt-6 border-t border-blue-700">
+                <h3 class="text-sm uppercase text-blue-300 mb-3 px-4">Today's Overview</h3>
+                <div class="bg-blue-900 bg-opacity-50 rounded-lg p-3 mb-2">
+                    <p class="text-xs text-blue-200">Exams Today</p>
+                    <p class="font-semibold">2 Exams</p>
+                </div>
+                <div class="bg-blue-900 bg-opacity-50 rounded-lg p-3 mb-2">
+                    <p class="text-xs text-blue-200">Pending Grading</p>
+                    <p class="font-semibold">47 Papers</p>
+                </div>
+                <div class="bg-blue-900 bg-opacity-50 rounded-lg p-3">
+                    <p class="text-xs text-blue-200">New Notifications</p>
+                    <p class="font-semibold">3 Unread</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-6 md:p-8">
+            <!-- Page Header -->
+            <div class="mb-6 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Dashboard Overview</h2>
+                    <p class="text-gray-600 dark:text-gray-400">Welcome back! Here's what's happening with your exams today.</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium flex items-center dark:bg-gray-800 dark:text-white dark:border-gray-700">
+                        <i class="fas fa-download mr-2 text-gray-600 dark:text-gray-400"></i> Export
+                    </button>
+                    <button class="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-medium flex items-center">
+                        <i class="fas fa-plus mr-2"></i><a href="{% url 'exam1:create_exam' %}"> New Exam </a>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 stat-card dark-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400"> <a href="{% url 'exam1:students_by_course' %}">Total Students</a></h3>
+                            <p class="text-2xl font-bold mt-1 dark:text-white">{{ total_students }}</p>
+                            <p class="text-xs text-green-600 mt-2"><i class="fas fa-arrow-up mr-1"></i> 5.2% from last month</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg dark:bg-blue-900 dark:bg-opacity-30">
+                            <i class="fas fa-users text-blue-600 text-xl dark:text-blue-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500 stat-card dark-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400"> <a href="{% url 'exam1:passed_students_by_course' %}">Passed Students</a></h3>
+                            <p class="text-2xl font-bold mt-1 dark:text-white">{{ passed }}</p>
+                            <p class="text-xs text-green-600 mt-2"><i class="fas fa-arrow-up mr-1"></i> {{ passed|floatformat:0 }}% pass rate</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-lg dark:bg-green-900 dark:bg-opacity-30">
+                            <i class="fas fa-graduation-cap text-green-600 text-xl dark:text-green-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500 stat-card dark-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400"><a href="{% url 'exam1:all_failed_students' %}">Failed Students</a></h3>
+                            <p class="text-2xl font-bold mt-1 dark:text-white">{{ failed }}</p>
+                            <p class="text-xs text-red-600 mt-2"><i class="fas fa-exclamation-circle mr-1"></i> {{ failed|floatformat:0 }}% failure rate</p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-lg dark:bg-red-900 dark:bg-opacity-30">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl dark:text-red-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500 stat-card dark-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400"><a href="{% url 'exam1:total_exams' %}"></h3>Total Exams</h3></a>
+                            <p class="text-2xl font-bold mt-1 dark:text-white">{{ total_exams }}</p>
+                            <p class="text-xs text-gray-600 mt-2 dark:text-gray-400"><i class="fas fa-info-circle mr-1"></i> 3 upcoming exams</p>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-lg dark:bg-purple-900 dark:bg-opacity-30">
+                            <i class="fas fa-book text-purple-600 text-xl dark:text-purple-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upcoming Events & Calendar -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Upcoming Events -->
+                <div class="bg-white rounded-xl shadow-md p-6 lg:col-span-1 dark-card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-white">Upcoming Events</h3>
+                        <a href="#" class="text-sm text-blue-600 font-medium dark:text-blue-400">View All</a>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="p-3 bg-blue-50 rounded-lg dark:bg-blue-900 dark:bg-opacity-20">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-semibold dark:text-white">Mathematics Final</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Tomorrow • 9:00 AM</p>
+                                </div>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-400">Exam</span>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-yellow-50 rounded-lg dark:bg-yellow-900 dark:bg-opacity-20">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-semibold dark:text-white">Department Meeting</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Wed, Jun 15 • 2:00 PM</p>
+                                </div>
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full dark:bg-yellow-900 dark:bg-opacity-30 dark:text-yellow-400">Meeting</span>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-green-50 rounded-lg dark:bg-green-900 dark:bg-opacity-20">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-semibold dark:text-white">Results Deadline</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Fri, Jun 17 • 5:00 PM</p>
+                                </div>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full dark:bg-green-900 dark:bg-opacity-30 dark:text-green-400">Deadline</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts and Analytics -->
+                <div class="lg:col-span-2 grid grid-cols-1 gap-6">
+                    <!-- Grades Distribution Chart -->
+                    <div class="bg-white rounded-xl shadow-md p-6 dark-card">
+                        <h3 class="font-bold text-lg mb-4 text-gray-800 dark:text-white">Grades Distribution</h3>
+                        <div class="h-80">
+                            <canvas id="gradesChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Subject Performance Chart -->
+                    <div class="bg-white rounded-xl shadow-md p-6 dark-card">
+                        <h3 class="font-bold text-lg mb-4 text-gray-800 dark:text-white">Average Marks Per Subject</h3>
+                        <div class="h-80">
+                            <canvas id="subjectChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Exams & Toppers -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Recent Exams -->
+                <div class="bg-white rounded-xl shadow-md p-6 dark-card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-white">Recent Exams</h3>
+                        <a href="#" class="text-sm text-blue-600 font-medium dark:text-blue-400">View All</a>
+                    </div>
+                    <div class="space-y-4">
+                        {% for exam in exams|slice:":3" %}
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg dark:bg-blue-900 dark:bg-opacity-20">
+                            <div>
+                                <h4 class="font-semibold dark:text-white">{{ exam.name }}</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ exam.date }} • {{ exam.participants_count }} students</p>
+                            </div>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full dark:bg-green-900 dark:bg-opacity-30 dark:text-green-400">Completed</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Top Performers -->
+                <div class="bg-white rounded-xl shadow-md p-6 dark-card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg text-gray-800 dark:text-white">Top Performers</h3>
+                        <a href="#" class="text-sm text-blue-600 font-medium dark:text-blue-400">View All</a>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center p-3 bg-gray-50 rounded-lg dark:bg-gray-800">
+                            <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-3">1</div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold dark:text-white">Sarah Johnson</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Grade 12 • 96.5%</p>
+                            </div>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-400">98% in Math</span>
+                        </div>
+                        
+                        <div class="flex items-center p-3 bg-gray-50 rounded-lg dark:bg-gray-800">
+                            <div class="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold mr-3">2</div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold dark:text-white">Michael Chen</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Grade 11 • 94.2%</p>
+                            </div>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full dark:bg-purple-900 dark:bg-opacity-30 dark:text-purple-400">97% in Physics</span>
+                        </div>
+                        
+                        <div class="flex items-center p-3 bg-gray-50 rounded-lg dark:bg-gray-800">
+                            <div class="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold mr-3">3</div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold dark:text-white">Emma Williams</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Grade 10 • 92.8%</p>
+                            </div>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full dark:bg-green-900 dark:bg-opacity-30 dark:text-green-400">95% in Chemistry</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize charts with Django data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Grades Chart
+            const gradesCtx = document.getElementById('gradesChart').getContext('2d');
+            new Chart(gradesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Distinction (≥75%)', 'First Class (60-74%)', 'Second Class (35-59%)', 'Fail (<35%)'],
+                    datasets: [{
+                        data: [{{ distinctions }}, {{ first_class }}, {{ second_class }}, {{ failed }}],
+                        backgroundColor: ['#16a34a', '#3b82f6', '#facc15', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                font: {
+                                    size: 13
+                                },
+                                padding: 20
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            // Subject Average Marks Chart
+            const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+            
+            // Extract subject data from Django context
+            const subjectLabels = [];
+            const subjectAverages = [];
+            
+            {% for sub, avg in subject_avg.items %}
+                subjectLabels.push('{{ sub }}');
+                subjectAverages.push({{ avg }});
+            {% endfor %}
+            
+            new Chart(subjectCtx, {
+                type: 'bar',
+                data: {
+                    labels: subjectLabels,
+                    datasets: [{
+                        label: 'Average Marks',
+                        data: subjectAverages,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 6
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Failed Students (Course Wise)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2, h3 { margin-top: 20px; color: #b30000; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table, th, td { border: 1px solid #666; }
+        th, td { padding: 8px; text-align: center; }
+        th { background-color: #ffcccc; }
+    </style>
+</head>
+<body>
+    <h2>❌ Failed Students (Course Wise)</h2>
+
+    {% if failed_data %}
+        {% for course, students in failed_data.items %}
+            <h3>📘 Course: {{ course|upper }}</h3>
+            <table>
+                <tr>
+                    <th>Register No</th>
+                    <th>Name</th>
+                    <th>Exam</th>
+                </tr>
+                {% for s in students %}
+                    <tr>
+                        <td>{{ s.register_number }}</td>
+                        <td>{{ s.student_name }}</td>
+                        <td>{{ s.exam_title }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+    {% else %}
+        <p>🎉 No failed students found!</p>
+    {% endif %}
+</body>
+</html>

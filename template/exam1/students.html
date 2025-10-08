@@ -1,0 +1,16 @@
+<tr>
+  <td>{{ student.name }}</td>
+  <td>{{ student.register_number }}</td>
+  <td>{{ student.course }}</td>
+  <td>
+      <!-- Download PDF -->
+      <a href="{% url 'download_result' student.id exam.exam_id %}" class="btn btn-success">
+          Download PDF
+      </a>
+
+      <!-- Send PDF to Email -->
+      <a href="{% url 'send_result' student.id exam.exam_id %}" class="btn btn-primary">
+          Send to Email
+      </a>
+  </td>
+</tr>

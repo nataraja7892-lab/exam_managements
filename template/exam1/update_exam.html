@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Exam</title>
+</head>
+<body>
+
+<h2>Update Exam: {{ exam.exam_title }}</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.exam_title.label }}: {{ form.exam_title }}<br>
+    {{ form.course.label }}: {{ form.course }}<br>
+    {{ form.year.label }}: {{ form.year }}<br>
+    {{ form.num_subjects.label }}: 
+    <input type="number" name="num_subjects" id="num_subjects_input" value="{{ form.num_subjects.value|default:exam.num_subjects }}" min="1"><br><br>
+
+    <div id="subject_fields"></div>
+
+    <button type="submit">Update Exam</button>
+</form>
+
+<script>
+    // Extract subject names and dates from the exam
+    const subjectNames = {{ exam.subject_names|safe }};
+    const subjectFieldsContainer = document.getElementById('subject_fields');
+    const numSubjectsInput = document.getElementById('num_subjects_input');
+
+    function renderSubjectFields(numSubjects) {
+        subjectFieldsContainer.innerHTML = '';  // Clear existing fields
+
+        // Render the subjects dynamically based on numSubjects
+        for (let i = 0; i < numSubjects; i++) {
+            const subjectName = subjectNames[i]?.name || '';  // Get subject name, default if empty
+            const subjectDate = subjectNames[i]?.date || '';  // Get subject date, default if empty
+
+            // Create input fields for each subject
+            const nameLabel = document.createElement('label');
+            nameLabel.innerText = 'Subject ' + (i + 1) + ' Name: ';
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.name = 'subject_' + (i + 1);
+            nameInput.value = subjectName;
+            nameInput.required = true;
+
+            const dateLabel = document.createElement('label');
+            dateLabel.innerText = ' Date: ';
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.name = 'date_' + (i + 1);
+            dateInput.value = subjectDate;
+            dateInput.required = true;
+
+            const lineBreak = document.createElement('br');
+
+            // Append the subject fields to the container
+            subjectFieldsContainer.appendChild(nameLabel);
+            subjectFieldsContainer.appendChild(nameInput);
+            subjectFieldsContainer.appendChild(dateLabel);
+            subjectFieldsContainer.appendChild(dateInput);
+            subjectFieldsContainer.appendChild(lineBreak);
+            subjectFieldsContainer.appendChild(document.createElement('br'));
+        }
+    }
+
+    // Initial render when the page loads
+    renderSubjectFields(parseInt(numSubjectsInput.value || 0));
+
+    // Update when the number of subjects input changes
+    numSubjectsInput.addEventListener('input', function() {
+        const num = parseInt(numSubjectsInput.value || 0);
+        renderSubjectFields(num);
+    });
+</script>
+
+</body>
+</html>

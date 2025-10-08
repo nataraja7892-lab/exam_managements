@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Exam</title>
+    <style>
+        .subject-group {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            margin-right: 10px;
+        }
+        input {
+            margin-right: 20px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Create Exam</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}  <!-- This renders exam_title, course, year, num_subjects -->
+
+    <div id="subject_fields"></div>
+
+    <button type="submit" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Create Exam
+    </button>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const numSubjectsInput = document.querySelector('input[name="num_subjects"]');
+        const subjectFieldsContainer = document.getElementById('subject_fields');
+
+        numSubjectsInput.addEventListener('input', function() {
+            const numSubjects = parseInt(this.value) || 0;
+            subjectFieldsContainer.innerHTML = '';
+
+            for (let i = 1; i <= numSubjects; i++) {
+                const subjectGroup = document.createElement('div');
+                subjectGroup.className = 'subject-group';
+                
+                // Subject Name
+                const subjectNameDiv = document.createElement('div');
+                subjectNameDiv.innerHTML = `
+                    <label for="subject_${i}">Subject ${i} Name:</label>
+                    <input type="text" name="subject_${i}" id="subject_${i}" required placeholder="Enter subject name">
+                `;
+                
+                // Subject Date
+                const subjectDateDiv = document.createElement('div');
+                subjectDateDiv.innerHTML = `
+                    <label for="date_${i}">Exam Date:</label>
+                    <input type="date" name="date_${i}" id="date_${i}" required>
+                `;
+                
+                // Max Marks
+                const maxMarksDiv = document.createElement('div');
+                maxMarksDiv.innerHTML = `
+                    <label for="max_marks_${i}">Maximum Marks:</label>
+                    <input type="number" name="max_marks_${i}" id="max_marks_${i}" min="1" required placeholder="100">
+                `;
+
+                subjectGroup.appendChild(subjectNameDiv);
+                subjectGroup.appendChild(subjectDateDiv);
+                subjectGroup.appendChild(maxMarksDiv);
+                subjectFieldsContainer.appendChild(subjectGroup);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
